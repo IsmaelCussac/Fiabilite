@@ -19,6 +19,8 @@ public class ItemsSortedListTest {
 	
 	ItemsSortedList panierTest;
 	
+	int maxLength = 10;
+	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 	}
@@ -32,37 +34,48 @@ public class ItemsSortedListTest {
 		testList = new ArrayList<Item>();
 		
 		Item itemToAdd;
-		for(int i = 0 ; i < 10 ; i++){
+		for(int i = 0 ; i < maxLength ; i++){
 			StringBuilder sb = new StringBuilder();
 			sb.append("item");
 			sb.append(i);
-			itemToAdd = new Item(sb.toString(), i);
+			float price = i;
+			itemToAdd = new Item(sb.toString(), price);
 			testList.add(itemToAdd);
 		}
+		
+		for(int i = 0; i < maxLength; i++)
+			System.out.println(testList.get(i).getName() + " " +testList.get(i).getPrice());
 	}
 
 	@After
 	public void tearDown() throws Exception {
 	}
 	
-	@Test(timeout=4000)
+	@Test(timeout=2000)
 	public void testIsPresentArticleOnNotPresentItem(){
 		panierTest = new ItemsSortedList(testList);
-		testItem = new Item("item10", 10);
+		testItem = new Item("item"+maxLength, maxLength);
 		assertFalse(panierTest.isPresentArticle(testItem));
 	}
 	
-	@Test(timeout=4000)
+	@Test(timeout=2000)
 	public void testIsPresentArticleZero(){
 		panierTest = new ItemsSortedList(testList);
-		testItem = new Item("item3", 3);
+		testItem = new Item("item0", (float) 0.0);
+		assertFalse(panierTest.isPresentArticle(testItem));
+	}
+	
+	@Test(timeout=2000)
+	public void testIsPresentArticleLast(){
+		panierTest = new ItemsSortedList(testList);
+		testItem = new Item("item"+(maxLength-1), maxLength-1);
 		assertTrue(panierTest.isPresentArticle(testItem));
 	}
 	
-	@Test(timeout=4000)
-	public void testIsPresentArticleLast(){
+	@Test(timeout=2000)
+	public void testIsPresentArticleMiddle(){
 		panierTest = new ItemsSortedList(testList);
-		testItem = new Item("item9", 9);
+		testItem = new Item("item"+(maxLength/2), maxLength/2);
 		assertTrue(panierTest.isPresentArticle(testItem));
 	}
 	
