@@ -1,0 +1,272 @@
+
+import java.io.*;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+public class CommentsUDC {
+	static byte[]  M ;
+	static BigInteger a;
+	
+	public static void main(String[] args) throws IOException,
+			NoSuchAlgorithmException {
+		BufferedReader reader = new BufferedReader(new FileReader("Notes.pdf"));
+		String ligne, com, app;
+		Boolean debut_du_fichier = true;
+		while (debut_du_fichier && ((ligne = reader.readLine()) != null)) {
+			if (!ligne.substring(0, 1).equals("%")) {
+				/* Première ligne du fichier qui n'est pas un commentaire */
+				debut_du_fichier = false;
+			}
+			if (ligne.substring(0, 4).equals("%UDC")) {
+				System.out.println("\nCommentaire UDC : " + ligne);
+			}
+
+		}
+		com = Calcule_HMAC();
+		Insere_Hmac(com, "NewNotes.pdf");
+		Verifie_HMAC(com, "NewNotes.pdf");
+		
+		Insere_Hmac("%UDC HMAC OxFBFCF14A0099D05CED0639F2CAA2BC319672A9D6", "frauduleux.pdf");
+		Verifie_HMAC(com, "frauduleux.pdf");
+		
+		
+		
+		BigInteger n = new BigInteger(
+				"22D352B7347CA7E3814FCBEC5781F808D9574CF63229E001F94C8EB301EED65AF2DF6C12954FBEBA7187F57934C8BCFD15A8F9DCC6706324EF1A2DA9C741B2B581836CD45B2B6FA90F0DAE95466E637CD034E6E7638D606F4793AE9B6D872B104306AA2F92F5530842FFAD15117549D991C4FB5F5AB17E8E2DF149343D49249C1BDA6167",
+				16);
+		BigInteger e = new BigInteger(
+				"26A3342507BA10D94C243C9FCC4EF13EE32D6AF64F181ED5CB761F6678C91196926A8EF4FC91D61A2EF1929B1238A95724C9EAE626F1201BA08A3FE416ABA166F91A55A178346D988AC631A6498E99C7EE68D6A69CE34E948E9ACF1EAD4E61BCAC2E19ED40875C76DB35CDCD56331CC2F148CEB303CD04F2F120DE639BB39598FEC82D",
+				16);
+		BigInteger d = new BigInteger(
+				"25D83080C913EC17C5BC07B9D5112CB2A99FA705", 16);
+				
+		
+		app = Calcul_Appendice(d, n,"Notes.pdf");
+		Insere_Appendice(app, "Notes.pdf","NewNotes.pdf");
+		Verifie_Appendice(e, n, "Appendice.pdf");
+		
+		Insere_Appendice(app, "frauduleux.pdf", "frauduleuxNew.pdf");
+		Verifie_Appendice(e, n, "frauduleux.pdf");
+
+	}
+
+	public static String Calcule_HMAC() throws IOException,
+			NoSuchAlgorithmException {
+
+		String s = "25D83080C913EC17C5BC07B9D5112CB2A99FA705";
+		byte[] buffer, resume;
+		MessageDigest fonction_de_hachage = null;
+
+		buffer = s.getBytes();
+
+		fonction_de_hachage = MessageDigest.getInstance("SHA1");
+		resume = fonction_de_hachage.digest(buffer);
+
+		File fichier = new File("Notes.pdf");
+		FileInputStream pdf = new FileInputStream(fichier);
+		fonction_de_hachage = MessageDigest.getInstance("SHA1");
+		int nbOctetsLus = pdf.read(buffer);
+		while (nbOctetsLus != -1) {
+			fonction_de_hachage.update(buffer, 0, nbOctetsLus);
+			nbOctetsLus = pdf.read(buffer);
+		}
+		pdf.close();
+		resume = fonction_de_hachage.digest();
+		String com = "%UDC HMAC Ox" + toHex(resume);
+		System.out.println(com);
+		
+		return com;
+	}
+
+	public static String toHex(byte[] donnees) {
+		return javax.xml.bind.DatatypeConverter.printHexBinary(donnees);
+	}
+
+
+	public static void Insere_Hmac (String com, String newFile) throws IOException {
+			FileOutputStream writer = new FileOutputStream(newFile);    		
+    		FileInputStream reader = new FileInputStream("Notes.pdf");
+
+    		int c; 
+    		while ((c = reader.read()) != '\n') { 
+    			writer.write(c); 
+    		} 
+    		writer.write('\n');
+    		writer.write(com.getBytes());
+    		writer.write('\n'); 
+    		
+    		while ((c = reader.read()) != -1) { 
+    			writer.write(c); 
+    		} 
+    		writer.close();
+    		reader.close();
+	}
+	
+	public static void Verifie_HMAC (String com, String file) throws IOException{
+		
+
+		File fichier = new File(file);
+		FileInputStream fis = new FileInputStream(fichier);
+
+		int c;
+		while ((c = fis.read()) != '\n') {
+		}
+
+		int cpt = 0;
+		boolean juste = true;
+
+		while ((c = fis.read()) != '\n') {
+			if (Integer.valueOf(com.toCharArray()[cpt]) % 256 != c) {
+				System.out.println("Erreur");
+				juste = false;
+				break;
+			}
+			cpt++;
+		}
+
+		if (juste)
+			System.out.println("La clef est juste");
+
+		fis.close();
+
+	}
+	
+	
+	/* Exercice 2 */
+	
+	public static String Calcul_Appendice (BigInteger d, BigInteger n, String filename) throws NoSuchAlgorithmException, IOException{
+		//BigInteger a = BigInteger.ZERO;
+		byte[]  buffer = new byte[8192];
+		
+		File fichier = new File(filename);
+		FileInputStream pdf = new FileInputStream(fichier);
+		
+		
+		MessageDigest fonction_de_hachage = null;
+		fonction_de_hachage = MessageDigest.getInstance("SHA1");
+		
+		int nbOctetsLus = pdf.read(buffer);
+		while (nbOctetsLus != -1) {
+			fonction_de_hachage.update(buffer, 0, nbOctetsLus);
+			nbOctetsLus = pdf.read(buffer);
+		}
+		M = fonction_de_hachage.digest();
+		BigInteger temp = new BigInteger(toHex(M), 16);
+		
+		a = temp.modPow(d, n);
+		String appendice = "%UDC SIGNATURE Ox" + toHex(a.toByteArray());
+		System.out.println(appendice);
+		
+		return appendice;
+	}
+	
+	public static void Insere_Appendice (String sign, String file, String fileOut) throws IOException{
+		FileOutputStream writer = new FileOutputStream(fileOut);    		
+		FileInputStream reader = new FileInputStream(file);
+
+		int c; 
+		while ((c = reader.read()) != '\n') { 
+			writer.write(c); 
+		} 
+		writer.write('\n');
+		writer.write(sign.getBytes());
+		writer.write('\n'); 
+		
+		while ((c = reader.read()) != -1) { 
+			writer.write(c); 
+		} 
+		writer.close();
+		reader.close();
+	}
+	
+	public static void Verifie_Appendice (BigInteger e, BigInteger n, String file) throws NoSuchAlgorithmException, IOException{
+		
+		// calcule le SHA1 du doc
+		byte[] buffer, resume;
+		MessageDigest fonction_de_hachage;
+		fonction_de_hachage = MessageDigest.getInstance("SHA1");
+
+		File fichier = new File(file);
+		FileInputStream fis = new FileInputStream(fichier);
+		buffer = new byte[8192];
+
+		int nbOctetsLus = 0;
+
+		int c;
+		int cpt = 0;
+
+		// lis la 1ere ligne
+		while ((c = fis.read()) != '\n') {
+			buffer[cpt++] = (byte) c;
+		}
+		buffer[cpt++] = (byte) c;
+
+		// lis la 2eme ligne et ne la prend pas en compte
+		while ((c = fis.read()) != '\n') {
+		}
+
+		// lis le reste
+		try {
+			nbOctetsLus = fis.read(buffer, cpt, buffer.length - cpt);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+		while (nbOctetsLus != -1) {
+			fonction_de_hachage.update(buffer, 0, nbOctetsLus + cpt);
+			cpt = 0;
+			try {
+				nbOctetsLus = fis.read(buffer);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+
+		try {
+			fis.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+		// digere
+		resume = fonction_de_hachage.digest();
+
+		System.out.println("Résumé du ficher: " + toHex(resume));
+
+		fis.close();
+
+		// retourne le résumé sous forme de BigInteger
+		BigInteger M = new BigInteger(resume);
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(
+				new FileInputStream(file)));
+		br.readLine();
+
+		String com = br.readLine();
+		String[] res = com.split("x");
+
+		BigInteger Mess = new BigInteger(res[1], 16);
+
+		BigInteger a = Mess.modPow(e, n);
+		System.out.println("Appendice chiffré: " + toHex(a.toByteArray()));
+
+		br.close();
+		
+		
+		if (a.byteValue() != M.byteValue())
+			System.out
+					.println("Erreur");
+		else
+			System.out.println("La signature est juste!");
+	}	
+}
+
+/*
+ * $ javac CommentsUDC.java $ java CommentsUDC
+ * 
+ * Commentaire UDC : %UDC Ceci est un premier commentaire
+ * 
+ * Commentaire UDC : %UDC Ceci est un second commentaire
+ */
+
