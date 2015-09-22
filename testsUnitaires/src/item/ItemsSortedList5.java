@@ -31,7 +31,7 @@ public class ItemsSortedList5 {
 	 * @param item the Item we are looking for
 	 * @return true iff item occurs in the list
 	 */
-	boolean isPresentArticle(Item item){	
+	public boolean isPresentArticle(Item item){	
 		int sizePanier=this.panierList.size();
 		int i=0,j=sizePanier-1,m=0;
 		boolean found=false;
