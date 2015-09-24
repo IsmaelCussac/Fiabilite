@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import item.Item;
 import item.ItemsSortedList;
+import item.ItemsSortedList5;
 
 import java.util.ArrayList;
 
@@ -56,7 +57,7 @@ public class ItemsSortedListTest {
 	public void testIsPresentArticleZero(){
 		panierTest = new ItemsSortedList(testList);
 		testItem = new Item("item0", 0);
-		assertFalse(panierTest.isPresentArticle(testItem));
+		assertTrue(panierTest.isPresentArticle(testItem));
 	}
 	
 	@Test(timeout=1000)
@@ -73,10 +74,25 @@ public class ItemsSortedListTest {
 		assertTrue(panierTest.isPresentArticle(testItem));
 	}
 	
-	@Test(timeout=1000)
+	@Test(expected = NullPointerException.class)
 	public void testIsPresentArticleNull(){
 		panierTest = new ItemsSortedList(testList);
 		testItem = null;
+		assertFalse(panierTest.isPresentArticle(testItem));
+	}
+	
+	@Test(expected = NullPointerException.class)
+	public void testIsPresentArticleListNull(){
+		testList = null;
+		panierTest = new ItemsSortedList(testList);
+		testItem = new Item("item1", 1);
+		assertFalse(panierTest.isPresentArticle(testItem));
+	}
+	
+	@Test(timeout=1000)
+	public void testIsPresentArticleWrongName(){
+		panierTest = new ItemsSortedList(testList);
+		testItem = new Item("item2", 3);
 		assertFalse(panierTest.isPresentArticle(testItem));
 	}
 }
