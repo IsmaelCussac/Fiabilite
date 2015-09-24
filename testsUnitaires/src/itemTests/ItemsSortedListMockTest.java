@@ -11,13 +11,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import item.Item;
-import item.ItemsSortedListLaboratory;
+import item.ItemsSortedListMock;
 
-public class ItemsSortedListLaboratoryTest {
+public class ItemsSortedListMockTest {
 
 	Item testItem;
 	ArrayList<Item> testList;
-	ItemsSortedListLaboratory panierTest;
+	ItemsSortedListMock panierTest;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {}
@@ -51,7 +51,7 @@ public class ItemsSortedListLaboratoryTest {
 		Item temp = testList.get(0);
 		testList.clear();
 		testList.add(temp);
-		panierTest = new ItemsSortedListLaboratory(testList);
+		panierTest = new ItemsSortedListMock(testList);
 		assertTrue(panierTest.isSortedList(testList));
 	}
 	
@@ -59,14 +59,14 @@ public class ItemsSortedListLaboratoryTest {
 	@Test
 	public void testIsSortedListOnEmptyList() {
 		testList.clear();
-		panierTest = new ItemsSortedListLaboratory(testList);
+		panierTest = new ItemsSortedListMock(testList);
 		assertTrue(panierTest.isSortedList(testList));
 	}
 	
 	/* test on an uninitialized list */
 	@Test(expected = NullPointerException.class)
 	public void testIsSortedListOnNullPointer(){		
-		panierTest = new ItemsSortedListLaboratory(testList);
+		panierTest = new ItemsSortedListMock(testList);
 		ArrayList<Item> nullList = null;
 		panierTest.isSortedList(nullList);
 		fail();
@@ -86,7 +86,7 @@ public class ItemsSortedListLaboratoryTest {
 			testList.add(itemToAdd);
 			testList.add(itemToAdd);
 		}
-		panierTest = new ItemsSortedListLaboratory(testList);
+		panierTest = new ItemsSortedListMock(testList);
 		assertTrue(panierTest.isSortedList(testList));
 	}
 	
@@ -103,7 +103,7 @@ public class ItemsSortedListLaboratoryTest {
 			itemToAdd = new Item(sb.toString(), price);
 			testList.add(itemToAdd);
 		}
-		panierTest = new ItemsSortedListLaboratory(testList);
+		panierTest = new ItemsSortedListMock(testList);
 		assertFalse(panierTest.isSortedList(testList));
 	}
 	/* test on a list which only contains the same element */
@@ -119,7 +119,7 @@ public class ItemsSortedListLaboratoryTest {
 			itemToAdd = new Item(sb.toString(), price);
 			testList.add(itemToAdd);
 		}
-		panierTest = new ItemsSortedListLaboratory(testList);
+		panierTest = new ItemsSortedListMock(testList);
 		assertTrue(panierTest.isSortedList(testList));
 	}
 	
